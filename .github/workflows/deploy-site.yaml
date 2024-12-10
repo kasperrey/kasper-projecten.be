@@ -1,0 +1,17 @@
+name: scp files
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: kasper-projecten.be
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          source: "*,!.*"
+          target: /var/www/kasper-projecten.be
