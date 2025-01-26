@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Brawl Car</title>
+</head>
+<body>
+<script src="versions.js"></script>
+<!--<ul>
+    <li><a href="./downloads/0.0.1/macOs.app.zip" download="brawl_car_0.0.1_macOS.app.zip">Download for macOS</a></li>
+    <li><a href="./downloads/0.0.1/windows.zip" download="brawl_car_0.0.1_windows.zip">Download for Windows</a></li>
+    <li><a href="./downloads/0.0.1/linux.x86_64" download="brawl_car_0.0.1_linux.x86_64">Download for Linux</a></li>
+</ul>
+
+<img src="images/0.0.1/image1.png">
+<img src="images/0.0.1/image2.png">
+<video controls>
+    <source src="images/0.0.1/video.mp4" type="video/mp4">
+    Your browser does not support HTML video.
+</video>-->
+
+<script>
+    window.versions.getVersions(function (versions) {
+        show(versions);
+    });
+
+    function getByValue(map, searchValue) {
+        for (let [key, value] of map.entries()) {
+            if (value === searchValue)
+                return key;
+        }
+    }
+
+    function show(versions) {
+        var allOfVersion = window.versions.getAll(versions);
+        allOfVersion.forEach(function (version) {
+            showVersion(version, getByValue(allOfVersion, version));
+        })
+    }
+
+    function showVersion(version, number) {
+        console.log(version);
+        var div = document.createElement('div');
+        var ul = document.createElement('ul');
+
+        var textVersion = document.createElement("p")
+        textVersion.innerText = number;
+        div.appendChild(textVersion);
+
+        var innerHTML = "";
+        version.downloads.forEach(function (download) {
+            var OS = "";
+            if (download.includes("linux")) {
+                OS = "linux";
+            } else if (download.includes("windows")) {
+                OS = "windows";
+            } else {
+                OS = "macOs"
+            }
+            innerHTML += "<li><a href=\"" + download + "\">Download for " + OS + "</a></li>";
+            var link = document.createElement("a");
+            link.setAttribute("href", download);
+        });
+        ul.innerHTML = innerHTML;
+        div.appendChild(ul);
+
+        version.images.forEach(function (image) {
+            div.appendChild(image)
+        });
+
+        div.style.padding = "0px 0px 100px 0px";
+
+        document.body.appendChild(div);
+    }
+</script>
+</body>
+</html>
