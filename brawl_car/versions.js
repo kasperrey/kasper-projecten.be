@@ -27,9 +27,9 @@ window.versions = {
         var downloadsPerVersion = new Map();
         versions.forEach(version => {
             var downloads = [];
-            downloads.push("./downloads/"+version+"linux.x86_64");
-            downloads.push("./downloads/"+version+"windows.zip");
-            downloads.push("./downloads/"+version+"macOs.app.zip");
+            downloads.push("./downloads/"+version+"/linux.x86_64");
+            downloads.push("./downloads/"+version+"/windows.zip");
+            downloads.push("./downloads/"+version+"/macOs.app.zip");
             downloadsPerVersion.set(version, downloads);
         });
         return downloadsPerVersion;
