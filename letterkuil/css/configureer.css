@@ -1,0 +1,20 @@
+#play {
+    font-family: 'Arial', sans-serif; /* Font style */
+    padding: 30px 60px; /* Padding to make the button larger */
+    font-size: 36px; /* Font size for the text */
+    text-align: center; /* Center the text */
+    color: white; /* Text color */
+    background: linear-gradient(145deg, #6e7dff, #5560ea); /* Gradient background */
+    border: none; /* Remove border */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.1), -4px -4px 15px rgba(255, 255, 255, 0.2); /* Soft shadow effect */
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+    cursor: pointer; /* Pointer cursor when hovering */
+}
+
+/* Hover Effects */
+#play:hover {
+    background: linear-gradient(145deg, #5560ea, #6e7dff); /* Reversed gradient for hover effect */
+    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.15), -4px -4px 20px rgba(255, 255, 255, 0.3); /* More pronounced shadow on hover */
+    transform: translateY(-5px); /* Slight lift effect when hovered */
+}

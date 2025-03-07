@@ -1,0 +1,56 @@
+#verwijderAlles {
+    background-color: #f44336;
+    color: white;
+    border: 2px solid #f44336;
+    border-radius: 12px;
+
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+#verwijderAlles:hover {
+    background-color: white;
+    color: black;
+}
+
+#speelSpel {
+    font-family: 'Arial', sans-serif; /* Font style */
+    padding: 15px 30px; /* Padding to make the button larger */
+    font-size: 18px; /* Font size for the text */
+    text-align: center; /* Center the text */
+    color: white; /* Text color */
+    background: linear-gradient(145deg, #6e7dff, #5560ea); /* Gradient background */
+    border: none; /* Remove border */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.1), -4px -4px 15px rgba(255, 255, 255, 0.2); /* Soft shadow effect */
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+    cursor: pointer; /* Pointer cursor when hovering */
+}
+
+/* Hover Effects */
+#speelSpel:hover {
+    background: linear-gradient(145deg, #5560ea, #6e7dff); /* Reversed gradient for hover effect */
+    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.15), -4px -4px 20px rgba(255, 255, 255, 0.3); /* More pronounced shadow on hover */
+    transform: translateY(-5px); /* Slight lift effect when hovered */
+}
+
+#maak\ speler {
+    background-color: #00b50f;
+    padding: 5px 10px;
+    text-align: center;
+    color: white;
+    border: 2px solid #00b50f;
+    border-radius: 12px;
+    transition-duration: 0.4s;
+}
+
+#maak\ speler:hover {
+    background-color: white;
+    color: black;
+}

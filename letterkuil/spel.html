@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Letterkuil</title>
+</head>
+<body>
+<script src="alles_met_localstorage.js"></script>
+
+<button style="position: absolute; top: 20px; left: 1000px" onclick="levels(1)">start level 1</button>
+<button style="position: absolute; top: 20px; left: 1100px" onclick="levels(3)">start level 3</button>
+<button style="position: absolute; top: 20px; left: 1200px" onclick="levels(6)">start level 6</button>
+<button style="position: absolute; top: 700px; left: 1000px; font: 30px Arial" onclick="window.location.assign('configureer.html')">stop</button>
+<button onclick="window.location.assign('winkel.html')" style="font: 30px Arial; position: absolute; top: 700px; left: 1100px">winkel</button>
+
+<h1 style="position: absolute; top: 350px; left: 680px">Klik op een knop rechts boven om het spel te starten.<br>
+    Tussen woorden of zinnen moet je geen spatie typen,<br>
+    je moet enkel een spatie typen in een zin.</h1>
+<canvas width="1500px" height="700px" id="canvas"></canvas>
+
+<script>
+  let x = 0;
+  let yVanRecord = 100;
+  let lijst_personen = [];
+  var personen = [];
+  var random_lijst = [];
+
+  lijst_personen = window.alles_met_localstorage.getLijst_met_personen()
+  if (lijst_personen === undefined || lijst_personen === null) {
+      window.location.assign("letterkuil.html")
+  }
+  for (var persoon of lijst_personen) {
+    personen.push(window.alles_met_localstorage.getPersoon(persoon));
+  }
+  try {
+      var geselecteerd_persoon = window.alles_met_localstorage.getGeselecteerd_persoon();
+      var geselecteerdeLetters = window.alles_met_localstorage.getGeselecteerde_letters();
+      if (geselecteerd_persoon.naam === undefined || geselecteerd_persoon.naam === null || geselecteerdeLetters === undefined || geselecteerdeLetters === null) {
+          window.location.assign("letterkuil.html")
+      }
+  } catch (e) {
+      window.location.assign("letterkuil.html")
+  }
+  var canvas = document.getElementById("canvas");
+  var c = canvas.getContext('2d');
+  c.font = "20px Arial";
+  var pac1 = new Image();
+  var pac2 = new Image();
+  var pac3 = new Image();
+  var pac4 = new Image();
+  var hoed = new Image();
+  pac1.src = "images/monsters/"+geselecteerd_persoon.monster+"/"+geselecteerd_persoon.monster+".png";
+  pac2.src = "images/monsters/"+geselecteerd_persoon.monster+"/"+geselecteerd_persoon.monster+"2.png";
+  pac3.src = "images/monsters/"+geselecteerd_persoon.monster+"/"+geselecteerd_persoon.monster+"3.png";
+  pac4.src = "images/monsters/"+geselecteerd_persoon.monster+"/"+geselecteerd_persoon.monster+"4.png";
+  hoed.src = "images/hoeden/"+geselecteerd_persoon.hoed;
+  var pac = 4;
+  var aantal_tekenen = 0;
+  var missers = 0;
+  var puut = new Audio("Puut-kort.mp3");
+  var isBijGat = false;
+  var level = 1;
+  var versnelling = 0.4;
+  var start = false;
+  addEventListener("keyup", function (ev) {
+      if (random_lijst.at(0).length === 1) {
+          if (ev.key === random_lijst.at(0)) {
+              random_lijst.splice(0, 1);
+              x -= 25;
+          } else {
+              if (ev.key !== "Shift" && ev.key !== "Lock" && ev.key !== "AltGr") {
+                  puut.play();
+                  missers += 1;
+                  if (missers > 9) {
+                      for (var r = 0; r < 26; r++) {
+                          random_lijst.push(geselecteerdeLetters.at(getRandomInt(geselecteerdeLetters.length)));
+                      }
+                      x = 0;
+                      isBijGat = false;
+                      levels(level - 1);
+                      missers = 0;
+                  }
+              }
+          }
+      } else {
+          if (ev.key === random_lijst.at(0).charAt(0)) {
+              random_lijst[0] = random_lijst.at(0).split("").splice(1, random_lijst.at(0).length-1).join("");
+          } else {
+              if (ev.key !== "Shift" && ev.key !== "Lock" && ev.key !== "AltGr") {
+                  puut.play();
+                  missers += 1;
+                  if (missers > 9) {
+                      for (var r = 0; r < 26; r++) {
+                          random_lijst.push(geselecteerdeLetters.at(getRandomInt(geselecteerdeLetters.length)));
+                      }
+                      x = 0;
+                      isBijGat = false;
+                      levels(level - 1);
+                      missers = 0;
+                  }
+              }
+          }
+      }
+  });
+  begin();
+
+
+  function lus() {
+      c.clearRect(0, 0, 1500, 700);
+      c.fillStyle = "#868686";
+      c.fillRect(1095, 110, 100, 25);
+      c.fillStyle = "#000000";
+      c.fillRect(680, 150, 520, 200);
+      c.fillText("level: "+level, 1100, 130);
+      for (var key of lijst_personen) {
+          c.fillText(key.toString().replace("letterkuil-speler-", "")+": "+personen.at(lijst_personen.indexOf(key)).level, 1220, yVanRecord);
+          yVanRecord+=20;
+      }
+      c.fillText("foute toetsen: "+missers.toString()+"/10", 1220, yVanRecord);
+      yVanRecord=100;
+      c.fillText(geselecteerd_persoon.naam.replace("letterkuil-speler-", ""), 20, 45);
+      c.fillText("diamanten: "+geselecteerd_persoon.diamanten, 500, 20);
+      c.fillStyle = "#FFFFFF";
+      drawLine(800, 260, 1200, 260);
+      doPac()
+      c.drawImage(hoed, 624, 13);
+      if (start) {
+          winstOfVerlies()
+          score()
+      }
+      window.requestAnimationFrame(lus);
+  }
+
+  function drawLine(x1, y1, x2,y2, stroke = 'white', width = 3) {
+      c.beginPath();
+      c.moveTo(x1, y1);
+      c.lineTo(x2, y2);
+      c.strokeStyle = stroke;
+      c.lineWidth = width;
+      c.stroke();
+  }
+
+  function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+  }
+
+  function levels(levels) {
+      level = levels;
+      versnelling = 0.2+0.2*levels;
+      start = true;
+  }
+
+  function begin() {
+      for (var n = 0; n < 26; n++) {
+          random_lijst.push(geselecteerdeLetters.at(getRandomInt(geselecteerdeLetters.length)));
+      }
+      lus();
+  }
+
+  function doPac() {
+      switch (pac) {
+          case 1 :
+              c.drawImage(pac1, 575, 150);
+              aantal_tekenen += 1;
+              if (aantal_tekenen === 60) {
+                  pac = 4;
+                  aantal_tekenen = 0;
+              }
+              break;
+          case 2:
+              c.drawImage(pac3, 575, 150);
+              aantal_tekenen += 1;
+              if (aantal_tekenen === 60) {
+                  pac = 1;
+                  aantal_tekenen = 0;
+              }
+              break;
+          case 3:
+              c.drawImage(pac4, 575, 150);
+              aantal_tekenen += 1;
+              if (aantal_tekenen === 60) {
+                  pac = 2;
+                  aantal_tekenen = 0;
+              }
+              break
+          case 4:
+              c.drawImage(pac2, 575, 150);
+              aantal_tekenen += 1;
+              if (aantal_tekenen === 60) {
+                  pac = 3;
+                  aantal_tekenen = 0;
+              }
+              break;
+      }
+  }
+
+  function indexvan(lijst, obj) {
+      for (var i = 0; i < lijst.length; i++) {
+          if (lijst.at(i).naam === obj.naam) {
+              return i;
+          }
+      }
+  }
+
+  function winstOfVerlies() {
+      if (isBijGat) {
+          for (var r = 0; r < 26; r++) {
+              random_lijst.push(geselecteerdeLetters.at(getRandomInt(geselecteerdeLetters.length)));
+          }
+          x = 0;
+          isBijGat = false;
+          levels(level - 1);
+          missers = 0;
+      }
+      if (!random_lijst.length) {
+          for (var n = 0; n < 26; n++) {
+              random_lijst.push(geselecteerdeLetters.at(getRandomInt(geselecteerdeLetters.length)));
+          }
+          x = 0;
+          levels(level + 1);
+          personen[indexvan(personen, geselecteerd_persoon)].diamanten = personen.at(indexvan(personen, geselecteerd_persoon)).diamanten+Math.floor(geselecteerdeLetters.length/2);
+          geselecteerd_persoon.diamanten+=(Math.floor(geselecteerdeLetters.length/2)*Math.ceil(level/5));
+          window.alles_met_localstorage.setPersoon(geselecteerd_persoon.naam, geselecteerd_persoon);
+          window.alles_met_localstorage.setGeselecteerd_persoon(geselecteerd_persoon);
+          if (geselecteerd_persoon.level < level) {
+              personen[indexvan(personen, geselecteerd_persoon)].level = personen.at(indexvan(personen, geselecteerd_persoon)).level = level;
+              geselecteerd_persoon.level = level;
+              window.alles_met_localstorage.setPersoon(geselecteerd_persoon.naam, geselecteerd_persoon);
+          }
+          missers = 0;
+      }
+  }
+
+  function score() {
+      var xVanLetter = 1200 - x;
+      for (var nRl = 0; nRl < random_lijst.length; nRl++) {
+          if (xVanLetter > 775) {
+              c.fillText(random_lijst.at(nRl) + " ", xVanLetter, 240);
+          } else {
+              random_lijst.splice(0, 1);
+              isBijGat = true;
+          }
+          xVanLetter += (10*random_lijst.at(nRl).length)+15;
+      }
+      if (!isBijGat) {
+          x += versnelling;
+      }
+  }
+</script>
+</body>
+</html>
