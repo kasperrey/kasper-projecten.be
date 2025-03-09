@@ -1,21 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Letterkuil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letterkuil - Typspel</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/letterkuil.css">
 </head>
 <body>
-<script src="alles_met_localstorage.js"></script>
+    <script src="alles_met_localstorage.js"></script>
 
-<button id="speelSpel" onclick="speel_spel()" style="font: 30px Arial; position: absolute; top: 300px; left: 1000px">speel spel</button>
-<button onclick="createSpeler()" id="maak speler" style="position: absolute; top: 647px; left: 680px">maak speler</button>
-<button id="verwijderAlles" onclick="verwijder_alles()">verwijder alles</button>
-<input type="text" style="position: absolute; top: 650px; left: 500px; border-radius: 12px;" id="input" placeholder="nieuwe speler naam">
-<h1 style="font: 70px Arial; position: absolute; top: 80px; left: 500px">L   e   t   t   e   r   k   u   i   l</h1>
+    <div class="container">
+        <div class="players-section">
+            <h1 class="game-title">Letterkuil</h1>
+            
+            <div class="player-list" id="playerList">
+                <!-- Player items will be inserted here by JavaScript -->
+            </div>
 
-<script>
+            <div class="new-player-form">
+                <input type="text" id="input" placeholder="Nieuwe speler naam">
+                <button id="maak speler" onclick="createSpeler()">Maak speler</button>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button id="speelSpel" onclick="speel_spel()">Start het spel</button>
+        </div>
+    </div>
+
+    <button id="verwijderAlles" onclick="verwijder_alles()">Verwijder alles</button>
+
+    <script>
     var persoonV;
     var index;
     var text;
@@ -59,52 +76,49 @@
         if (text) {
             text.remove();
         }
-        var y = 200
-        for (persoon of lijst_personen) {
-            button = document.createElement("button");
-            var deleteButton = document.createElement("button");
-            var naamButton = document.createElement("button");
-            button.style.font = "30px Arial";
-            button.style.position = "absolute";
-            button.style.left = "500px";
-            button.style.top = y.toString()+"px";
-            button.style.width = "240px";
-            button.innerText = persoon.replace("letterkuil-speler-", "");
-            button.persoon = persoon;
-            if (lijst_personen.length > 1) {
-                button.style.background = "#868686"
-            } else {
-                button.style.background = "#0d8600"
-                geselcteerdeSpeler = button
-                window.alles_met_localstorage.setGeselecteerd_persoon(personen[lijst_personen.indexOf(persoon)])
+        const playerList = document.getElementById('playerList');
+        playerList.innerHTML = ''; // Clear existing players
+        
+        for (let i = 0; i < lijst_personen.length; i++) {
+            const persoon = lijst_personen[i];
+            const playerItem = document.createElement('div');
+            playerItem.className = 'player-item';
+            
+            const nameButton = document.createElement('button');
+            nameButton.className = 'player-name';
+            nameButton.innerText = persoon.replace("letterkuil-speler-", "");
+            nameButton.persoon = persoon;
+            
+            if (lijst_personen.length === 1) {
+                nameButton.classList.add('selected');
+                geselcteerdeSpeler = nameButton;
+                window.alles_met_localstorage.setGeselecteerd_persoon(personen[0]);
             }
-            button.onclick = function (ev) {
-                if (geselcteerdeSpeler) {
-                    geselcteerdeSpeler.style.background = "#868686"
-                }
-                geselcteerdeSpeler = ev.currentTarget
-                geselcteerdeSpeler.style.background = "#0d8600"
-                window.alles_met_localstorage.setGeselecteerd_persoon(personen[lijst_personen.indexOf(geselcteerdeSpeler.persoon)])
-            }
-            deleteButton.delete = persoon
-            deleteButton.style.position = "absolute";
-            deleteButton.style.left = (500+parseInt(button.style.width.replace("px", ""))).toString()+"px"
-            deleteButton.style.top = y.toString()+"px"
-            deleteButton.innerHTML = '<img src="vuilbak.jpg" alt="delete"/>';
-            deleteButton.onclick = deleteSpeler
-            naamButton.setting = persoon
-            naamButton.style.position = "absolute";
-            naamButton.style.left = (542+parseInt(button.style.width.replace("px", ""))).toString()+"px"
-            naamButton.style.top = y.toString()+"px"
-            naamButton.innerHTML = '<span class="material-symbols-outlined">settings</span>';
-            naamButton.onclick = verander
-            beginDingen.push(button)
-            beginDingen.push(deleteButton)
-            beginDingen.push(naamButton)
-            document.body.appendChild(button)
-            document.body.appendChild(deleteButton)
-            document.body.appendChild(naamButton)
-            y+=35
+            
+            nameButton.onclick = function(ev) {
+                const allNames = document.querySelectorAll('.player-name');
+                allNames.forEach(btn => btn.classList.remove('selected'));
+                ev.currentTarget.classList.add('selected');
+                geselcteerdeSpeler = ev.currentTarget;
+                window.alles_met_localstorage.setGeselecteerd_persoon(personen[lijst_personen.indexOf(geselcteerdeSpeler.persoon)]);
+            };
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'action-button delete-button';
+            deleteButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+            deleteButton.delete = persoon;
+            deleteButton.onclick = deleteSpeler;
+            
+            const settingsButton = document.createElement('button');
+            settingsButton.className = 'action-button settings-button';
+            settingsButton.innerHTML = '<span class="material-symbols-outlined">settings</span>';
+            settingsButton.setting = persoon;
+            settingsButton.onclick = verander;
+            
+            playerItem.appendChild(nameButton);
+            playerItem.appendChild(settingsButton);
+            playerItem.appendChild(deleteButton);
+            playerList.appendChild(playerItem);
         }
     }
 
@@ -114,15 +128,15 @@
         window.alles_met_localstorage.remove(ev.currentTarget.delete)
         window.alles_met_localstorage.setLijst_met_personen(lijst_personen)
         window.alles_met_localstorage.setGeselecteerd_persoon({});
-        for (var b of beginDingen) {
-            b.remove()
-        }
-        beginDingen = []
-        beginscherm()
+        beginscherm();
     }
 
     function createSpeler() {
         var input = document.getElementById("input")
+        if (!input.value.trim()) {
+            showError("Voer een naam in!");
+            return;
+        }
         lijst_personen.push("letterkuil-speler-"+input.value)
         var speler = {
             "naam": "letterkuil-speler-"+input.value,
@@ -136,11 +150,7 @@
         window.alles_met_localstorage.setPersoon("letterkuil-speler-"+input.value, speler)
         window.alles_met_localstorage.setLijst_met_personen(lijst_personen)
         input.value = ""
-        for (var b of beginDingen) {
-            b.remove()
-        }
-        beginDingen = []
-        beginscherm()
+        beginscherm();
     }
 
     function verander(ev) {
@@ -148,8 +158,8 @@
         var input = document.getElementById("input");
         var button = document.getElementById("maak speler");
         input.value = "";
-        input.placeholder = "nieuwe naam";
-        button.innerText = "verander naam";
+        input.placeholder = "Nieuwe naam";
+        button.innerText = "Verander naam";
         button.onclick = function () {
             sla_op(persoonV);
         }
@@ -157,6 +167,10 @@
 
     function sla_op(persoon) {
         var input = document.getElementById("input");
+        if (!input.value.trim()) {
+            showError("Voer een nieuwe naam in!");
+            return;
+        }
         var button = document.getElementById("maak speler");
         index = lijst_personen.indexOf(persoonV.naam);
         lijst_personen.splice(index, 1);
@@ -168,36 +182,44 @@
         window.alles_met_localstorage.setPersoon(persoon.naam, persoon);
         window.alles_met_localstorage.setLijst_met_personen(lijst_personen);
         input.value = "";
-        input.placeholder = "nieuwe speler naam";
-        button.innerText = "maak speler";
+        input.placeholder = "Nieuwe speler naam";
+        button.innerText = "Maak speler";
         button.onclick = createSpeler;
-        for (var b of beginDingen) {
-            b.remove();
-        }
-        beginDingen = [];
         beginscherm();
     }
 
     function speel_spel() {
-        if (text) {
-            text.remove()
+        if (!geselcteerdeSpeler) {
+            showError("Selecteer eerst een speler!");
+            return;
         }
-        if (geselcteerdeSpeler) {
-            window.location.assign('configureer.html')
-        } else {
-            text = document.createElement("h3")
-            text.innerText = "Selecteer een speler!"
-            text.style.position = "absolute"
-            text.style.top = "90px"
-            text.style.left = "700px"
-            document.body.appendChild(text)
-        }
+        window.location.assign('configureer.html');
     }
 
     function verwijder_alles() {
-        localStorage.clear()
-        window.location.assign("");
+        if (confirm("Weet je zeker dat je alle spelers wilt verwijderen?")) {
+            localStorage.clear();
+            window.location.assign("");
+        }
     }
-</script>
+
+    function showError(message) {
+        const existingError = document.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        const error = document.createElement('div');
+        error.className = 'error-message';
+        error.textContent = message;
+        
+        const container = document.querySelector('.players-section');
+        container.insertBefore(error, container.querySelector('.new-player-form'));
+        
+        setTimeout(() => {
+            error.remove();
+        }, 3000);
+    }
+    </script>
 </body>
 </html>

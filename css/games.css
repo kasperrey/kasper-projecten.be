@@ -1,0 +1,138 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 600px;
+    border: solid black;
+    background-color: #2175bc;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    left: 200px;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+#related_links {
+    width: 12em;
+    padding: 0 0 1em 0;
+    margin-bottom: 1em;
+    font-family: 'Trebuchet MS', 'Lucida Grande',
+    Verdana, Lucida, Geneva, Helvetica,
+    Arial, sans-serif;
+    color: #333;
+}
+
+#related_links ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+#related_links li {
+    border-bottom: 1px solid #90bade;
+    margin: 0;
+}
+
+#related_links li a {
+    display: block;
+    padding: 5px 5px 5px 0.5em;
+    border-left: 10px solid #1958b7;
+    border-right: 10px solid #508fc4;
+    background-color: #2175bc;
+    color: #fff;
+    text-decoration: none;
+    width: 100%;
+}
+
+html>body #related_links li a {
+    width: auto;
+}
+
+#related_links li a:hover {
+    border-left: 10px solid #1c64d1;
+    border-right: 10px solid #5ba3e0;
+    background-color: #2586d7;
+    color: #fff;
+}
+
+/* Games Grid Layout */
+.games-grid {
+    display: grid;
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+}
+
+/* Game Detail Cards */
+.game-detail {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.game-detail h2 {
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.game-content {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.game-description {
+    line-height: 1.6;
+}
+
+.game-description h3 {
+    margin: var(--spacing-md) 0 var(--spacing-sm);
+    color: var(--color-secondary);
+}
+
+.game-description ul {
+    list-style: disc;
+    margin-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.game-description li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.game-controls {
+    background-color: var(--color-secondary);
+    color: var(--color-text-light);
+    padding: var(--spacing-md);
+    border-radius: 4px;
+    margin: var(--spacing-md) 0;
+}
+
+.game-controls ul {
+    list-style: none;
+    margin: var(--spacing-sm) 0 0 var(--spacing-md);
+}
+
+.button {
+    margin-top: var(--spacing-md);
+}
+
+/* Responsive Design */
+@media screen and (min-width: 768px) {
+    .games-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}

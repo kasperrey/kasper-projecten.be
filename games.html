@@ -1,42 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Games</title>
-    <link rel="stylesheet" href="NavigatieBar.css">
-    <link rel="stylesheet" href="games.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ontdek en speel Letterkuil en Brawl Car spellen">
+    <title>Games - Kasper's projecten</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/NavigatieBar.css">
+    <link rel="stylesheet" href="css/games.css">
 </head>
 <body>
-<ul class="nav">
-    <li class="nav"><a href="index.html">Home</a></li>
-    <li class="nav active"><a href="games.html">Games</a></li>
-    <li class="nav" style="float:right"><a href="about.html">About</a></li>
-</ul>
+    <header>
+        <nav>
+            <ul class="nav">
+                <li class="nav"><a href="index.html">Home</a></li>
+                <li class="nav active"><a href="games.html">Games</a></li>
+                <li class="nav"><a href="nieuws.html">Nieuws</a></li>
+                <li class="nav" style="float:right"><a href="about.html">Over</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<ul id="related_links">
-    <li>
-        <a class="tooltip" href="letterkuil/letterkuil.html">
-            Letterkuil
-            <span class="tooltiptext">Letterkuil is een spel om te leren typen.<br>
-    Je moet de letters typen voor ze bij het monster aankomen.<br>
-    Je kan verschillende personen laten spelen.<br>
-    Er is een winkel waar je met diamanten die je verdient door te spelen, monsters en hoeden voor je monsters kan kopen.
-    <strong>Pas op: als je een hoed koopt, dan ben je je vorige hoed kwijt en dat is ook zo bij de monsters</strong>.<br>
-    De letters waarmee je wil spelen kan je aanduiden op een toetsenbord.<br>
-    Hoe meer letters je aanduidt, hoe meer diamanten je verdient.<br>
-    Als je 10 foute toetsen hebt ingedrukt, dan ga je een level omlaag.<br>
-    Je ziet de recordlevels van de andere spelers die op jouw computer spelen.</span>
-        </a></li>
+    <main>
+        <section class="section">
+            <div class="container">
+                <h1>Onze Games</h1>
+                <p>Kies uit onze selectie van boeiende games. Elk spel biedt een unieke ervaring!</p>
 
-    <li>
-        <a class="tooltip" href="/brawl_car/distfiles/WebGL/WebGL/index.html">
-            Brawl Car
-            <span class="tooltiptext">
-                In brawl car kan je wandelen met de pijltjes, springen met spatie en lopen met shift<br>
-                Door op S te drukken kan je rijden in een auto en als je nog eens op S klikt wordt je terug een persoon.<br>
-                <strong>PS</strong> hey duurt even om te laden.
-            </span>
-        </a></li>
-</ul>
+                <div class="games-grid">
+                    <article class="game-detail">
+                        <h2>Letterkuil</h2>
+                        <div class="game-content">
+                            <div class="game-description">
+                                <p>Letterkuil is een spannend typspel ontworpen om je typvaardigheden te verbeteren terwijl je plezier hebt!</p>
+                                <h3>Kenmerken:</h3>
+                                <ul>
+                                    <li>Oefen typen met aanpasbare lettersets</li>
+                                    <li>Verdien diamanten terwijl je verbetert</li>
+                                    <li>Koop nieuwe monsters en hoeden in de winkel</li>
+                                    <li>Volg je voortgang met levels</li>
+                                    <li>Wedijver met records van andere spelers</li>
+                                </ul>
+                                <div class="game-controls">
+                                    <p><strong>Hoe te spelen:</strong> Typ de letters voordat ze het monster bereiken. Hoe meer letters je selecteert, hoe meer diamanten je verdient!</p>
+                                </div>
+                                <a href="letterkuil/letterkuil.html" class="button">Speel Letterkuil</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="game-detail">
+                        <h2>Brawl Car</h2>
+                        <div class="game-content">
+                            <div class="game-description">
+                                <p>Ervaar de spanning van zowel lopen als rijden in dit opwindende avonturenspel!</p>
+                                <h3>Kenmerken:</h3>
+                                <ul>
+                                    <li>Naadloos wisselen tussen lopen en rijden</li>
+                                    <li>Verken de omgeving vrij</li>
+                                    <li>Interactieve gameplay mechanismen</li>
+                                </ul>
+                                <div class="game-controls">
+                                    <p><strong>Besturing:</strong></p>
+                                    <ul>
+                                        <li>Pijltjestoetsen: Bewegen</li>
+                                        <li>Spatiebalk: Springen</li>
+                                        <li>Shift: Rennen</li>
+                                        <li>S: Wissel tussen lopen en rijden</li>
+                                    </ul>
+                                </div>
+                                <a href="/brawl_car/distfiles/WebGL/WebGL/index.html" class="button">Speel Brawl Car</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="section">
+        <div class="container">
+            <p>&copy; 2025 Kasper's projecten. Alle rechten voorbehouden.</p>
+        </div>
+    </footer>
 </body>
 </html>
