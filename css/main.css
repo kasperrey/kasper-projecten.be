@@ -119,19 +119,6 @@ a:hover {
   text-align: center;
 }
 
-/* Footer */
-footer {
-  background-color: var(--color-secondary);
-  color: var(--color-text-light);
-  padding: var(--spacing-md) 0;
-  margin-top: var(--spacing-xl);
-}
-
-footer p {
-  margin: 0;
-  text-align: center;
-}
-
 /* About Page Styles */
 .about-content {
     max-width: 800px;
