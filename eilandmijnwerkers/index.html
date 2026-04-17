@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EilandMijnwerkers</title>
+    <script src="helpScript.js"></script>
+    <style>
+
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+
+        .bg {
+            background-image: url("images/void.jpg");
+
+            height: 100%;
+
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        #canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <canvas id="canvas" width="10000" height="10000"></canvas>
+    <script>
+        const gebouwen = [
+            {img: "centrum", tile: "aarde", x: 100, y: 100, w: 40, h: 40, offsetX: 0, offsetY: 0, dragging: false, price: 10, gain: 1},
+            {img: "mijnwerker", tile: "metaal", x: 100,  y: 200, w: 40, h: 40, offsetX: 0, offsetY: 0, dragging: false, price: 40, gain: 2},
+            {img: "plasmapomp", tile: "plasma", x:100, y: 300, w: 40, h: 40, offsetX: 0, offsetY: 0, dragging: false, price: 300, gain: 10}
+        ]
+        var gedaan = false;
+        const time = new Date().getTime();
+
+        let lastTime = 0;
+        let miningTimer = 0;
+        let collapseTimer = 0;
+
+        const canvas = document.getElementById("canvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext("2d");
+
+        const map = generateMap();
+
+        function removeSide() {
+            map.markeer();
+            setTimeout(() => map.valAf(), 3000);
+        }
+
+        function drawMap() {
+            let startx = 900;
+            let starty = 20;
+            for (let i = 0; i < map.gameMap.length; i++) {
+                let row = map.gameMap[i];
+                for (let j = 0; j < row.length; j++) {
+                    let tegel = row[j];
+                    let x = startx + (j - i) * 50;
+                    let y = starty + (j + i) * 25;
+                    if (tegel) {
+                        if (tegel.warning) {
+                            ctx.drawImage(images.get(tegel.type+"-warn"), x, y);
+                            if (tegel.gebouw) {
+                                ctx.drawImage(images.get(tegel.gebouw.type+"-warn"), x, y - 35)
+                            }
+                        } else {
+                            ctx.drawImage(images.get(tegel.type), x, y);
+                            if (tegel.gebouw) {
+                                ctx.drawImage(images.get(tegel.gebouw.type), x, y - 35)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawRest() {
+            const breedte = 400;
+            const hoogte = 60;
+            const x = (canvas.width - breedte) / 2;
+            const y = canvas.height - hoogte - 20;
+
+            ctx.fillStyle = "rgba(50, 50, 50, 0.8)";
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+
+            ctx.fillRect(x, y, breedte, hoogte);
+            ctx.strokeRect(x, y, breedte, hoogte);
+
+            const slotSize = 40;
+            const padding = 10;
+
+            for (let i = 0; i < gebouwen.length; i++) {
+                let slotX = x + padding + (i * (slotSize + padding));
+                let slotY = y + (hoogte - slotSize) / 2;
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.fillRect(slotX, slotY, slotSize, slotSize);
+                ctx.strokeRect(slotX, slotY, slotSize, slotSize);
+                let gebouw = gebouwen[i]
+                if (!gebouw.dragging) {
+                    gebouw.x = slotX;
+                    gebouw.y = slotY;
+                    gebouw.offsetX = 0;
+                    gebouw.offsetY = 0;
+                    gebouw.w = slotSize;
+                    gebouw.h = slotSize;
+                }
+                ctx.fillStyle = "#ffffff"
+                ctx.drawImage(images.get(gebouw.img), gebouw.x, gebouw.y, gebouw.w, gebouw.h);
+                ctx.font = "20px serif";
+                ctx.fillText("€" + gebouw.price, gebouw.x, gebouw.y + gebouw.h);
+            }
+
+            let timeToGo = 300000 - (new Date().getTime() - time);
+            if (timeToGo <= 0) {
+                gedaan = true;
+            }
+            ctx.font = "48px serif";
+            ctx.fillText(millisToMinutesAndSeconds(timeToGo), 20, 60);
+
+            ctx.fillText("€" + map.money, canvas.width - 200, 60);
+        }
+
+        function scoreScreen() {
+            const scoreScreenImg = new Image();
+            scoreScreenImg.src = "images/scorescreen.jpg";
+            scoreScreenImg.onload = function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(scoreScreenImg, 0, 0);
+                ctx.font = "200px serif";
+                ctx.fillStyle = "#ffffff"
+                ctx.fillText("Geld: €" + map.money, 350, 450);
+            };
+        }
+
+        function loop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            miningTimer += deltaTime;
+            collapseTimer += deltaTime;
+
+            if (miningTimer >= 1000) {
+                map.mijn();
+                miningTimer -= 1000;
+            }
+
+            if (collapseTimer >= 57000) {
+                removeSide();
+                collapseTimer -= 57000;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMap();
+            drawRest();
+
+            if (!gedaan) {
+                requestAnimationFrame(loop);
+            } else {
+                scoreScreen();
+            }
+        }
+
+        function start() {
+            canvas.addEventListener('mousedown', (e) => {
+                const mouse = getMousePos(e);
+
+                gebouwen.forEach(g => {
+                    if (mouse.x >= g.x && mouse.x <= g.x + g.w &&
+                        mouse.y >= g.y && mouse.y <= g.y + g.h) {
+
+                        g.dragging = true;
+                        g.offsetX = mouse.x - g.x;
+                        g.offsetY = mouse.y - g.y;
+                        g.w = 95;
+                        g.h = 84;
+                    }
+                });
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                gebouwen.forEach(g => {
+                    if (g.dragging) {
+                        const mouse = getMousePos(e);
+                        g.x = mouse.x - g.offsetX;
+                        g.y = mouse.y - g.offsetY;
+                    }
+                });
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                gebouwen.forEach(g => {
+                    if (g.dragging) {
+                        let pos = getMousePos(e);
+                        let dx = pos.x - 900;
+                        let dy = pos.y - 20;
+                        let j = Math.round((dy / 25 + dx / 50) / 2);
+                        let i = Math.round((dy / 25 - dx / 50) / 2);
+                        if (i >= 0 && i < 15 && j >= 0 && j < 15) {
+                            let tegel = map.gameMap[i][j];
+                            if (tegel && !tegel.gebouw) {
+                                if (tegel.type === g.tile) {
+                                    if (map.money >= g.price) {
+                                        tegel.gebouw = new Gebouw(g.img, 1, g.gain);
+                                        map.money -= g.price;
+                                    } else {
+                                        alert("Je hebt niet genoeg geld.")
+                                    }
+                                } else {
+                                    alert("Je kan een " + g.img + " enkel op " + g.tile + " plaatsen.");
+                                }
+                            }
+                        }
+                        g.dragging = false;
+                    }
+                });
+            });
+
+            requestAnimationFrame(loop);
+        }
+
+        const images = laadImages(start);
+    </script>
+</body>
+</html>
