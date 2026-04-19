@@ -125,7 +125,7 @@ function generateMap() {
 
 function laadImages(callback) {
     let map = new Map();
-    let imageNames = ["centrum", "aarde", "metaal", "mijnwerker", "plasma", "plasmapomp", "centrum-warn", "aarde-warn", "metaal-warn", "mijnwerker-warn", "plasma-tegel-warn", "plasmapomp-warn"];
+    let imageNames = ["centrum", "aarde", "metaal", "mijnwerker", "plasma", "plasmapomp", "centrum-warn", "aarde-warn", "metaal-warn", "mijnwerker-warn", "plasma-warn", "plasmapomp-warn"];
     let loadedCount = 0;
 
     imageNames.forEach(name => {

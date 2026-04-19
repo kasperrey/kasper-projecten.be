@@ -4,32 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EilandMijnwerkers</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/NavigatieBar.css">
     <script src="helpScript.js"></script>
     <style>
 
         body, html {
             height: 100%;
             margin: 0;
+            padding: 0;
         }
 
         .bg {
             background-image: url("images/void.jpg");
-
             height: 100%;
-
             background-position: center;
             background-repeat: no-repeat;
             background-size: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: -1;
         }
 
         #canvas {
             position: absolute;
             left: 0;
-            top: 0;
+            top: 50px;
+        }
+
+        /* Responsive styles */
+        @media screen and (max-width: 768px) {
+            #canvas {
+                top: 100px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            #canvas {
+                top: 140px;
+            }
         }
     </style>
 </head>
 <body>
+    <header>
+        <nav>
+            <ul class="nav">
+                <li class="nav"><a href="../index.html">Home</a></li>
+                <li class="nav"><a href="../games.html">Games</a></li>
+                <li class="nav"><a href="../nieuws.html">Nieuws</a></li>
+                <li class="nav" style="float:right"><a href="../about.html">Over</a></li>
+            </ul>
+        </nav>
+    </header>
     <div class="bg"></div>
     <canvas id="canvas" width="10000" height="10000"></canvas>
     <script>
@@ -46,8 +75,16 @@
         let collapseTimer = 0;
 
         const canvas = document.getElementById("canvas");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        function resizeCanvas() {
+            const navHeight = window.innerWidth <= 480 ? 140 : (window.innerWidth <= 768 ? 100 : 50);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - navHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
         const ctx = canvas.getContext("2d");
 
         const map = generateMap();
@@ -58,14 +95,16 @@
         }
 
         function drawMap() {
-            let startx = 900;
-            let starty = 20;
+            const scale = Math.min(canvas.width / 2000, canvas.height / 1000, 1);
+            const tileSize = 50 * scale;
+            let startx = canvas.width * 0.45;
+            let starty = canvas.height * 0.05;
             for (let i = 0; i < map.gameMap.length; i++) {
                 let row = map.gameMap[i];
                 for (let j = 0; j < row.length; j++) {
                     let tegel = row[j];
-                    let x = startx + (j - i) * 50;
-                    let y = starty + (j + i) * 25;
+                    let x = startx + (j - i) * tileSize;
+                    let y = starty + (j + i) * (tileSize / 2);
                     if (tegel) {
                         if (tegel.warning) {
                             ctx.drawImage(images.get(tegel.type+"-warn"), x, y);
@@ -84,8 +123,9 @@
         }
 
         function drawRest() {
-            const breedte = 400;
-            const hoogte = 60;
+            const scale = Math.min(canvas.width / 1000, canvas.height / 600, 1);
+            const breedte = 400 * scale;
+            const hoogte = 60 * scale;
             const x = (canvas.width - breedte) / 2;
             const y = canvas.height - hoogte - 20;
 
@@ -96,8 +136,8 @@
             ctx.fillRect(x, y, breedte, hoogte);
             ctx.strokeRect(x, y, breedte, hoogte);
 
-            const slotSize = 40;
-            const padding = 10;
+            const slotSize = 40 * scale;
+            const padding = 10 * scale;
 
             for (let i = 0; i < gebouwen.length; i++) {
                 let slotX = x + padding + (i * (slotSize + padding));
@@ -117,7 +157,7 @@
                 }
                 ctx.fillStyle = "#ffffff"
                 ctx.drawImage(images.get(gebouw.img), gebouw.x, gebouw.y, gebouw.w, gebouw.h);
-                ctx.font = "20px serif";
+                ctx.font = Math.max(12, 20 * scale) + "px serif";
                 ctx.fillText("€" + gebouw.price, gebouw.x, gebouw.y + gebouw.h);
             }
 
@@ -125,10 +165,10 @@
             if (timeToGo <= 0) {
                 gedaan = true;
             }
-            ctx.font = "48px serif";
-            ctx.fillText(millisToMinutesAndSeconds(timeToGo), 20, 60);
+            ctx.font = Math.max(24, 48 * scale) + "px serif";
+            ctx.fillText(millisToMinutesAndSeconds(timeToGo), 20 * scale, 60 * scale);
 
-            ctx.fillText("€" + map.money, canvas.width - 200, 60);
+            ctx.fillText("€" + map.money, canvas.width - 200 * scale, 60 * scale);
         }
 
         function scoreScreen() {
@@ -136,10 +176,11 @@
             scoreScreenImg.src = "images/scorescreen.jpg";
             scoreScreenImg.onload = function () {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(scoreScreenImg, 0, 0);
-                ctx.font = "200px serif";
+                ctx.drawImage(scoreScreenImg, 0, 0, canvas.width, canvas.height);
+                const scale = Math.min(canvas.width / 1000, canvas.height / 600, 1);
+                ctx.font = Math.max(60, 200 * scale) + "px serif";
                 ctx.fillStyle = "#ffffff"
-                ctx.fillText("Geld: €" + map.money, 350, 450);
+                ctx.fillText("Geld: €" + map.money, canvas.width * 0.35, canvas.height * 0.75);
             };
         }
 
@@ -175,6 +216,7 @@
         function start() {
             canvas.addEventListener('mousedown', (e) => {
                 const mouse = getMousePos(e);
+                const scale = Math.min(canvas.width / 1000, canvas.height / 600, 1);
 
                 gebouwen.forEach(g => {
                     if (mouse.x >= g.x && mouse.x <= g.x + g.w &&
@@ -183,8 +225,8 @@
                         g.dragging = true;
                         g.offsetX = mouse.x - g.x;
                         g.offsetY = mouse.y - g.y;
-                        g.w = 95;
-                        g.h = 84;
+                        g.w = 95 * scale;
+                        g.h = 84 * scale;
                     }
                 });
             });
@@ -203,10 +245,14 @@
                 gebouwen.forEach(g => {
                     if (g.dragging) {
                         let pos = getMousePos(e);
-                        let dx = pos.x - 900;
-                        let dy = pos.y - 20;
-                        let j = Math.round((dy / 25 + dx / 50) / 2);
-                        let i = Math.round((dy / 25 - dx / 50) / 2);
+                        const scale = Math.min(canvas.width / 2000, canvas.height / 1000, 1);
+                        const tileSize = 50 * scale;
+                        let startx = canvas.width * 0.45;
+                        let starty = canvas.height * 0.05;
+                        let dx = pos.x - startx;
+                        let dy = pos.y - starty;
+                        let j = Math.round((dy / (tileSize / 2) + dx / tileSize) / 2);
+                        let i = Math.round((dy / (tileSize / 2) - dx / tileSize) / 2);
                         if (i >= 0 && i < 15 && j >= 0 && j < 15) {
                             let tegel = map.gameMap[i][j];
                             if (tegel && !tegel.gebouw) {
