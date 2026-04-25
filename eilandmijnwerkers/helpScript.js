@@ -147,10 +147,21 @@ function laadImages(callback) {
 
 function getMousePos(e) {
     const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
 }
+
 function millisToMinutesAndSeconds(millis) {
     var minutes = Math.floor(millis / 60000);
     var seconds = ((millis % 60000) / 1000).toFixed(0);
     return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+}
+
+function saveBest(best) {
+    localStorage.setItem("best", best.toString())
+}
+
+function loadBest() {
+    return parseInt(localStorage.getItem("best"));
 }

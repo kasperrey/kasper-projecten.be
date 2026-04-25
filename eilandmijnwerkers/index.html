@@ -89,6 +89,8 @@
 
         const map = generateMap();
 
+        const best = loadBest();
+
         function removeSide() {
             map.markeer();
             setTimeout(() => map.valAf(), 3000);
@@ -178,9 +180,12 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(scoreScreenImg, 0, 0, canvas.width, canvas.height);
                 const scale = Math.min(canvas.width / 1000, canvas.height / 600, 1);
-                ctx.font = Math.max(60, 200 * scale) + "px serif";
+                ctx.font = Math.max(24, 80 * scale) + "px serif";
                 ctx.fillStyle = "#ffffff"
-                ctx.fillText("Geld: €" + map.money, canvas.width * 0.35, canvas.height * 0.75);
+                ctx.fillText("Geld: €" + map.money, canvas.width * 0.20, canvas.height * 0.30);
+                const finalBest = (!isNaN(best))? Math.max(best, map.money) : map.money
+                saveBest(finalBest)
+                ctx.fillText("Record: €" + finalBest, canvas.width * 0.20, canvas.height * 0.35 + Math.max(24, 80 * scale));
             };
         }
 
@@ -231,6 +236,24 @@
                 });
             });
 
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const mouse = getMousePos(e);
+                const scale = Math.min(canvas.width / 1000, canvas.height / 600, 1);
+
+                gebouwen.forEach(g => {
+                    if (mouse.x >= g.x && mouse.x <= g.x + g.w &&
+                        mouse.y >= g.y && mouse.y <= g.y + g.h) {
+
+                        g.dragging = true;
+                        g.offsetX = mouse.x - g.x;
+                        g.offsetY = mouse.y - g.y;
+                        g.w = 95 * scale;
+                        g.h = 84 * scale;
+                    }
+                });
+            }, { passive: false });
+
             window.addEventListener('mousemove', (e) => {
                 gebouwen.forEach(g => {
                     if (g.dragging) {
@@ -241,10 +264,53 @@
                 });
             });
 
+            window.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                gebouwen.forEach(g => {
+                    if (g.dragging) {
+                        const mouse = getMousePos(e);
+                        g.x = mouse.x - g.offsetX;
+                        g.y = mouse.y - g.offsetY;
+                    }
+                });
+            }, { passive: false });
+
             window.addEventListener('mouseup', (e) => {
                 gebouwen.forEach(g => {
                     if (g.dragging) {
                         let pos = getMousePos(e);
+                        const scale = Math.min(canvas.width / 2000, canvas.height / 1000, 1);
+                        const tileSize = 50 * scale;
+                        let startx = canvas.width * 0.45;
+                        let starty = canvas.height * 0.05;
+                        let dx = pos.x - startx;
+                        let dy = pos.y - starty;
+                        let j = Math.round((dy / (tileSize / 2) + dx / tileSize) / 2);
+                        let i = Math.round((dy / (tileSize / 2) - dx / tileSize) / 2);
+                        if (i >= 0 && i < 15 && j >= 0 && j < 15) {
+                            let tegel = map.gameMap[i][j];
+                            if (tegel && !tegel.gebouw) {
+                                if (tegel.type === g.tile) {
+                                    if (map.money >= g.price) {
+                                        tegel.gebouw = new Gebouw(g.img, 1, g.gain);
+                                        map.money -= g.price;
+                                    } else {
+                                        alert("Je hebt niet genoeg geld.")
+                                    }
+                                } else {
+                                    alert("Je kan een " + g.img + " enkel op " + g.tile + " plaatsen.");
+                                }
+                            }
+                        }
+                        g.dragging = false;
+                    }
+                });
+            });
+
+            window.addEventListener('touchend', (e) => {
+                gebouwen.forEach(g => {
+                    if (g.dragging) {
+                        let pos = getMousePos(e.changedTouches[0]);
                         const scale = Math.min(canvas.width / 2000, canvas.height / 1000, 1);
                         const tileSize = 50 * scale;
                         let startx = canvas.width * 0.45;
