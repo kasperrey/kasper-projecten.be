@@ -6,58 +6,6 @@
     <title>Dieren Raadspel</title>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/NavigatieBar.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        .game-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        button.danger {
-            background-color: #dc3545;
-            font-size: 12px;
-            padding: 5px 10px;
-        }
-        button.danger:hover {
-            background-color: #bd2130;
-        }
-        input[type="text"] {
-            padding: 8px;
-            width: 80%;
-            font-size: 16px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -71,235 +19,67 @@
         </nav>
     </header>
 
-    <div class="game-container">
-    <div class="card">
-        <h2 id="game-text">Laden...</h2>
+    <main class="game-container">
+        <div class="card">
+            <h1>Dieren Raadspel</h1>
+            <p>Bedenk een dier en laat de computer het raden! Je kunt nu kiezen uit twee manieren om te spelen:</p>
+            
+            <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 20px;">
+                <div class="mode-option">
+                    <h2>Lokaal Spelen</h2>
+                    <p>De computer leert alleen van jou. Alle nieuwe dieren worden opgeslagen in je eigen browser.</p>
+                    <a href="lokaal.html" class="button">Start Lokaal Spel</a>
+                </div>
 
-        <div id="action-buttons" class="hidden">
-            <button onclick="handleAnswer(true)">Ja</button>
-            <button onclick="handleAnswer(false)">Nee</button>
+                <div class="mode-option" style="border-top: 1px solid #eee; padding-top: 20px;">
+                    <h2>Globaal Spelen</h2>
+                    <p>De computer leert van iedereen! Nieuwe dieren die jij toevoegt, kunnen ook door anderen geraden worden (en andersom).</p>
+                    <a href="globaal.html" class="button">Start Globaal Spel</a>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <div id="start-interface" class="hidden">
-            <button onclick="startRound()">Ik ben er klaar voor!</button>
-        </div>
-
-        <div id="learn-interface" class="hidden">
-            <input type="text" id="input-field" placeholder="">
-            <br>
-            <button onclick="submitLearnStep()">Volgende</button>
-        </div>
-    </div>
-
-    <button class="danger" onclick="resetTree()">Reset de kennis! (voor altijd)</button>
-    </div>
-
-    <script>
-        // Simple binary tree node class
-        class Node {
-            constructor(key) {
-                this.key = key;
-                this.left = null;  // Represents "Yes" path
-                this.right = null; // Represents "No" path
-            }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #f4f4f9;
         }
-
-        // Global Game States
-        let root = null;
-        let currentNode = null;
-        let parentNode = null;
-        let currentDirection = ''; // track 'left' or 'right' relationship with parent
-
-        // Form states for learning phase
-        let learnState = 0;
-        let newAnimal = '';
-        let newQuestion = '';
-
-        // UI Element Selectors
-        const gameText = document.getElementById('game-text');
-        const actionButtons = document.getElementById('action-buttons');
-        const startInterface = document.getElementById('start-interface');
-        const learnInterface = document.getElementById('learn-interface');
-        const inputField = document.getElementById('input-field');
-
-        // Helper: Serialization & Deserialization for LocalStorage
-        function treeToObjects(node) {
-            if (!node) return null;
-            return {
-                key: node.key,
-                left: treeToObjects(node.left),
-                right: treeToObjects(node.right)
-            };
+        .game-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
         }
-
-        function objectsToTree(obj) {
-            if (!obj) return null;
-            let node = new Node(obj.key);
-            node.left = objectsToTree(obj.left);
-            node.right = objectsToTree(obj.right);
-            return node;
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-
-        function saveTree() {
-            localStorage.setItem("animalTree", JSON.stringify(treeToObjects(root)));
+        .mode-option {
+            padding: 20px;
         }
-
-        function initGame() {
-            const saved = localStorage.getItem("animalTree");
-            if (saved) {
-                root = objectsToTree(JSON.parse(saved));
-            } else {
-                root = new Node("mug"); // Default animal
-                saveTree();
-            }
-            showStartScreen();
+        .mode-option h2 {
+            margin-top: 0;
+            color: #333;
         }
-
-        function resetTree() {
-            if(confirm("Weet je zeker dat je alle opgeslagen dieren wilt wissen?")) {
-                root = new Node("mug");
-                saveTree();
-                showStartScreen();
-            }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            margin-top: 10px;
         }
-
-        // Game loop navigation steps
-        function showStartScreen() {
-            actionButtons.classList.add('hidden');
-            learnInterface.classList.add('hidden');
-            startInterface.classList.remove('hidden');
-            gameText.innerText = "Bedenk een dier in je hoofd...";
+        .button:hover {
+            background-color: #0056b3;
         }
-
-        function startRound() {
-            startInterface.classList.add('hidden');
-            currentNode = root;
-            parentNode = null;
-            currentDirection = '';
-            evaluateCurrentNode();
-        }
-
-        function evaluateCurrentNode() {
-            // Check if leaf node (Animal guess)
-            if (currentNode.left === null && currentNode.right === null) {
-                gameText.innerText = `Is het een ${currentNode.key}?`;
-                actionButtons.classList.remove('hidden');
-            } else {
-                // Decision node (Question)
-                gameText.innerText = `${currentNode.key}`;
-                actionButtons.classList.remove('hidden');
-            }
-        }
-
-        function handleAnswer(isYes) {
-            // Leaf node handling (Guess outcome)
-            if (currentNode.left === null && currentNode.right === null) {
-                if (isYes) {
-                    gameText.innerText = "Ik heb gewonnen! 🎉";
-                    actionButtons.classList.add('hidden');
-                    setTimeout(showStartScreen, 2500);
-                } else {
-                    // Computer lost, enter learning wizard sequence
-                    actionButtons.classList.add('hidden');
-                    startLearningWizard();
-                }
-            } else {
-                // Branch node navigation
-                parentNode = currentNode;
-                if (isYes) {
-                    currentDirection = 'left';
-                    currentNode = currentNode.left;
-                } else {
-                    currentDirection = 'right';
-                    currentNode = currentNode.right;
-                }
-                evaluateCurrentNode();
-            }
-        }
-
-        // Learning phase multi-step setup
-        function startLearningWizard() {
-            learnState = 1;
-            learnInterface.classList.remove('hidden');
-            gameText.innerText = "Ik geef het op. Welk dier had je in gedachten?";
-            inputField.value = "";
-            inputField.placeholder = "Bijv. olifant";
-            inputField.focus();
-        }
-
-        function submitLearnStep() {
-            let value = inputField.value.trim().toLowerCase();
-            if (!value) return;
-
-            if (learnState === 1) {
-                newAnimal = value;
-                learnState = 2;
-                gameText.innerText = `Welke ja/nee-vraag onderscheidt een ${newAnimal} van een ${currentNode.key}?`;
-                inputField.value = "";
-                inputField.placeholder = "Bijv. Heeft het dier een slurf?";
-                inputField.focus();
-            }
-            else if (learnState === 2) {
-                newQuestion = value;
-                // Capitalize first letter and append question mark if missing
-                newQuestion = newQuestion.charAt(0).toUpperCase() + newQuestion.slice(1);
-                if (!newQuestion.endsWith('?')) newQuestion += '?';
-
-                learnState = 3;
-                learnInterface.classList.add('hidden');
-                gameText.innerText = `Wat is het juiste antwoord op die vraag voor een ${newAnimal}?`;
-                actionButtons.classList.remove('hidden');
-            }
-        }
-
-        // Capture final Yes/No state for custom configuration step 3
-        function handleFinalLearnAnswer(isYes) {
-            let animalNode = new Node(newAnimal);
-            let questionNode = new Node(newQuestion);
-
-            // Reconstruct modern binary node branch splits
-            questionNode.left = isYes ? animalNode : currentNode;
-            questionNode.right = isYes ? currentNode : animalNode;
-
-            if (!parentNode) {
-                // Tree only had 1 leaf element originally
-                root = questionNode;
-            } else {
-                // Link question back into structural chain
-                if (currentDirection === 'left') {
-                    parentNode.left = questionNode;
-                } else {
-                    parentNode.right = questionNode;
-                }
-            }
-
-            saveTree();
-            gameText.innerText = `Bedankt! Ik heb geleerd over de ${newAnimal}.`;
-            actionButtons.classList.add('hidden');
-            setTimeout(showStartScreen, 2500);
-        }
-
-        // Overwrite handleAnswer dynamically if user is answering step 3 of wizard
-        const originalHandleAnswer = handleAnswer;
-        handleAnswer = function(isYes) {
-            if (learnState === 3) {
-                learnState = 0;
-                handleFinalLearnAnswer(isYes);
-            } else {
-                originalHandleAnswer(isYes);
-            }
-        };
-
-        // Listen for "Enter" key inside input field form steps
-        inputField.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                submitLearnStep();
-            }
-        });
-
-        // Fire game up when DOM finishes initial load cycle
-        window.onload = initGame;
-    </script>
+    </style>
 </body>
 </html>
