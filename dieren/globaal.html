@@ -12,18 +12,22 @@
             margin: 0;
             padding: 0;
             text-align: center;
+            background-color: #f9f9f9;
         }
+        /* Expanded the game container width to give the tree breathing room */
         .game-container {
-            max-width: 600px;
+            max-width: 1200px;
             margin: 40px auto;
-            padding: 20px;
+            padding: 0 20px;
         }
+        /* Kept the question card neat and centered */
         .card {
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin: 0 auto 40px auto;
+            max-width: 600px;
         }
         button {
             background-color: #007bff;
@@ -49,6 +53,121 @@
         .hidden {
             display: none;
         }
+
+        /* --- CSS Boom Structuur Visualisatie (Bigger Layout) --- */
+        .tree-container {
+            background: #ffffff;
+            padding: 40px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: left;
+            margin-bottom: 40px;
+            width: 100%;
+            box-sizing: border-box;
+
+            /* Enable scrollbars only if the tree extends past 1200px wide */
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .tree-container h3 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+            font-size: 22px;
+        }
+        /* Forces the tree wrapper to maintain its true calculated width */
+        .tree {
+            display: inline-block;
+            min-width: 100%;
+            text-align: center;
+        }
+        .tree ul {
+            padding-top: 30px;
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+        .tree li {
+            float: left;
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 30px 15px 0 15px; /* Increased padding to separate nodes further */
+            transition: all 0.5s;
+        }
+        /* Connectie-lijnen via pseudo-elementen */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: 2px solid #ccc;
+            width: 50%;
+            height: 30px; /* Taller connections */
+        }
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            border-left: 2px solid #ccc;
+        }
+        .tree li:only-child::after, .tree li:only-child::before {
+            display: none;
+        }
+        .tree li:only-child {
+            padding-top: 0;
+        }
+        .tree li:first-child::before, .tree li:last-child::after {
+            border: 0 none;
+        }
+        .tree li:last-child::before {
+            border-right: 2px solid #ccc;
+            border-radius: 0 5px 0 0;
+        }
+        .tree li:first-child::after {
+            border-radius: 5px 0 0 0;
+        }
+        .tree ul ul::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: 2px solid #ccc;
+            width: 0;
+            height: 30px; /* Taller connections */
+        }
+        /* Grafische Node Elementen */
+        .tree li .node-box {
+            border: 2px solid #ccc;
+            padding: 10px 18px; /* Slightly larger padding inside boxes */
+            text-decoration: none;
+            color: #444;
+            font-size: 14px;
+            display: inline-block;
+            border-radius: 5px;
+            transition: all 0.5s;
+            background: #fff;
+            white-space: nowrap; /* Prevents long questions from wrapping awkwardly */
+        }
+        .tree li .question-node {
+            background-color: #e2f0fe;
+            border-color: #b6d4fe;
+            color: #084298;
+            font-weight: bold;
+        }
+        .tree li .animal-node {
+            background-color: #e2f0d9;
+            border-color: #c5e1a5;
+            color: #2e7d32;
+        }
+        .branch-label {
+            font-size: 11px;
+            color: #888;
+            display: block;
+            margin-top: -22px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -64,30 +183,34 @@
     </header>
 
     <div class="game-container">
-    <div class="card">
-        <h2 id="game-text">Laden...</h2>
+        <div class="card">
+            <h2 id="game-text">Laden...</h2>
 
-        <div id="action-buttons" class="hidden">
-            <button onclick="handleAnswer(true)">Ja</button>
-            <button onclick="handleAnswer(false)">Nee</button>
+            <div id="action-buttons" class="hidden">
+                <button onclick="handleAnswer(true)">Ja</button>
+                <button onclick="handleAnswer(false)">Nee</button>
+            </div>
+
+            <div id="start-interface" class="hidden">
+                <button onclick="startRound()">Ik ben er klaar voor!</button>
+            </div>
+
+            <div id="learn-interface" class="hidden">
+                <input type="text" id="input-field" placeholder="">
+                <br>
+                <button onclick="submitLearnStep()">Volgende</button>
+            </div>
         </div>
 
-        <div id="start-interface" class="hidden">
-            <button onclick="startRound()">Ik ben er klaar voor!</button>
+        <div class="tree-container">
+            <h3>Huidige Kennisboom (Cloud Live)</h3>
+            <div class="tree" id="tree-display"></div>
         </div>
-
-        <div id="learn-interface" class="hidden">
-            <input type="text" id="input-field" placeholder="">
-            <br>
-            <button onclick="submitLearnStep()">Volgende</button>
-        </div>
-    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    // Simple binary tree node class
     class Node {
         constructor(key) {
             this.key = key;
@@ -101,25 +224,22 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Global Game States
     let root = null;
     let currentNode = null;
     let parentNode = null;
     let currentDirection = '';
 
-    // Form states for learning phase
     let learnState = 0;
     let newAnimal = '';
     let newQuestion = '';
 
-    // UI Element Selectors
     const gameText = document.getElementById('game-text');
     const actionButtons = document.getElementById('action-buttons');
     const startInterface = document.getElementById('start-interface');
     const learnInterface = document.getElementById('learn-interface');
     const inputField = document.getElementById('input-field');
+    const treeDisplay = document.getElementById('tree-display');
 
-    // Helper: Serialization & Deserialization
     function treeToObjects(node) {
         if (!node) return null;
         return {
@@ -137,46 +257,79 @@
         return node;
     }
 
-    // THIRD-PARTY SAVE: Updates the single row in your cloud database
+    function renderTreeVisual() {
+        treeDisplay.innerHTML = '';
+        if (!root) return;
+
+        const masterUl = document.createElement('ul');
+        masterUl.appendChild(createHtmlBranch(root, ''));
+        treeDisplay.appendChild(masterUl);
+    }
+
+    function createHtmlBranch(node, labelText) {
+        const li = document.createElement('li');
+        const box = document.createElement('div');
+        box.className = 'node-box';
+
+        if (node.left === null && node.right === null) {
+            box.classList.add('animal-node');
+            box.innerText = node.key;
+        } else {
+            box.classList.add('question-node');
+            box.innerText = node.key;
+        }
+
+        if (labelText) {
+            const span = document.createElement('span');
+            span.className = 'branch-label';
+            span.innerText = labelText;
+            li.appendChild(span);
+        }
+
+        li.appendChild(box);
+
+        if (node.left || node.right) {
+            const subUl = document.createElement('ul');
+            if (node.left) subUl.appendChild(createHtmlBranch(node.left, 'Ja'));
+            if (node.right) subUl.appendChild(createHtmlBranch(node.right, 'Nee'));
+            li.appendChild(subUl);
+        }
+
+        return li;
+    }
+
     async function saveTree() {
         try {
             const updatedTreeData = treeToObjects(root);
-
-            // We update the row where id is 1 (or whatever your row ID is)
             const { error } = await supabaseClient
                 .from('game_data')
                 .update({ tree_json: updatedTreeData })
-                .eq('id', 1); // Matches the row in your database
+                .eq('id', 1);
 
             if (error) throw error;
+            renderTreeVisual();
         } catch (error) {
             console.error("Error saving global tree to Supabase:", error);
         }
     }
 
-    // THIRD-PARTY LOAD: Fetches the shared tree on page load
-    // THIRD-PARTY LOAD: Fetches the shared tree on page load safely
     async function initGame() {
         gameText.innerText = "Kennis ophalen van de cloud...";
         try {
-            // We drop .single() and use normal select, grabbing the first row array element
             const { data, error } = await supabaseClient
                 .from('game_data')
                 .select('tree_json');
 
             if (error) throw error;
 
-            // Safety check: If the database is somehow completely empty, use a fallback default tree
             if (!data || data.length === 0) {
-                console.warn("No rows found in database. Using default fallback tree.");
                 root = new Node("mug");
-                // Automatically insert a new row to fix the database for next time
                 await supabaseClient.from('game_data').insert([{ id: 1, tree_json: treeToObjects(root) }]);
             } else {
-                // Grab the very first row found in the table
                 root = objectsToTree(data[0].tree_json);
             }
 
+            renderTreeVisual();
             showStartScreen();
         } catch (error) {
             console.error("Error fetching tree from Supabase:", error);
@@ -184,7 +337,6 @@
         }
     }
 
-    // Game loop navigation steps
     function showStartScreen() {
         actionButtons.classList.add('hidden');
         learnInterface.classList.add('hidden');
@@ -280,7 +432,7 @@
                 parentNode.left = questionNode;
             } else {
                 parentNode.right = questionNode;
-                }
+            }
         }
 
         await saveTree();

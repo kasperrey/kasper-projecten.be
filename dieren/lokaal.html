@@ -3,27 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dieren Raadspel - Lokaal</title>
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/NavigatieBar.css">
+    <title>Dieren Raadspel met Boomweergave</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        .game-container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 40px auto;
             padding: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
         }
         .card {
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
         button {
             background-color: #007bff;
@@ -42,6 +37,7 @@
             background-color: #dc3545;
             font-size: 12px;
             padding: 5px 10px;
+            margin-top: 20px;
         }
         button.danger:hover {
             background-color: #bd2130;
@@ -57,21 +53,113 @@
         .hidden {
             display: none;
         }
+
+        /* --- Tree Visualizer Styling --- */
+        .tree-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: left;
+            overflow-x: auto;
+            width: 100%;
+        }
+        .tree-container h3 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+        }
+        .tree ul {
+            padding-top: 20px;
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+        .tree li {
+            float: left;
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 5px 0 5px;
+            transition: all 0.5s;
+        }
+        /* Connectors */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: 2px solid #ccc;
+            width: 50%;
+            height: 20px;
+        }
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            border-left: 2px solid #ccc;
+        }
+        /* Remove connectors from single elements */
+        .tree li:only-child::after, .tree li:only-child::before {
+            display: none;
+        }
+        .tree li:only-child {
+            padding-top: 0;
+        }
+        .tree li:first-child::before, .tree li:last-child::after {
+            border: 0 none;
+        }
+        .tree li:last-child::before {
+            border-right: 2px solid #ccc;
+            border-radius: 0 5px 0 0;
+        }
+        .tree li:first-child::after {
+            border-radius: 5px 0 0 0;
+        }
+        .tree ul ul::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: 2px solid #ccc;
+            width: 0;
+            height: 20px;
+        }
+        /* Node Boxes */
+        .tree li .node-box {
+            border: 2px solid #ccc;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #666;
+            font-family: arial, sans-serif;
+            font-size: 13px;
+            display: inline-block;
+            border-radius: 5px;
+            transition: all 0.5s;
+            background: #fff;
+        }
+        .tree li .question-node {
+            background-color: #e2f0fe;
+            border-color: #b6d4fe;
+            color: #084298;
+            font-weight: bold;
+        }
+        .tree li .animal-node {
+            background-color: #e2f0d9;
+            border-color: #c5e1a5;
+            color: #2e7d32;
+        }
+        .branch-label {
+            font-size: 10px;
+            color: #999;
+            display: block;
+            margin-top: -15px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <ul class="nav">
-                <li class="nav"><a href="../index.html">Home</a></li>
-                <li class="nav"><a href="../games.html">Games</a></li>
-                <li class="nav"><a href="../nieuws.html">Nieuws</a></li>
-                <li class="nav" style="float:right"><a href="../about.html">Over</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <div class="game-container">
     <div class="card">
         <h2 id="game-text">Laden...</h2>
 
@@ -91,38 +179,38 @@
         </div>
     </div>
 
-    <button class="danger" onclick="resetTree()">Reset de kennis! (voor altijd)</button>
+    <div class="tree-container">
+        <h3>Huidige Kennisboom</h3>
+        <div class="tree" id="tree-display"></div>
     </div>
 
+    <button class="danger" onclick="resetTree()">Reset de kennis! (voor altijd)</button>
+
     <script>
-        // Simple binary tree node class
         class Node {
             constructor(key) {
                 this.key = key;
-                this.left = null;  // Represents "Yes" path
-                this.right = null; // Represents "No" path
+                this.left = null;  // "Ja" branch
+                this.right = null; // "Nee" branch
             }
         }
 
-        // Global Game States
         let root = null;
         let currentNode = null;
         let parentNode = null;
-        let currentDirection = ''; // track 'left' or 'right' relationship with parent
-
-        // Form states for learning phase
+        let currentDirection = '';
         let learnState = 0;
         let newAnimal = '';
         let newQuestion = '';
 
-        // UI Element Selectors
         const gameText = document.getElementById('game-text');
         const actionButtons = document.getElementById('action-buttons');
         const startInterface = document.getElementById('start-interface');
         const learnInterface = document.getElementById('learn-interface');
         const inputField = document.getElementById('input-field');
+        const treeDisplay = document.getElementById('tree-display');
 
-        // Helper: Serialization & Deserialization for LocalStorage
+        // LocalStorage helpers
         function treeToObjects(node) {
             if (!node) return null;
             return {
@@ -142,16 +230,64 @@
 
         function saveTree() {
             localStorage.setItem("animalTree", JSON.stringify(treeToObjects(root)));
+            renderTreeVisual(); // Redraw whenever data updates
         }
 
+        // --- NEW: Tree DOM Renderer ---
+        function renderTreeVisual() {
+            treeDisplay.innerHTML = '';
+            if (!root) return;
+
+            const masterUl = document.createElement('ul');
+            masterUl.appendChild(createHtmlBranch(root, ''));
+            treeDisplay.appendChild(masterUl);
+        }
+
+        function createHtmlBranch(node, labelText) {
+            const li = document.createElement('li');
+            const box = document.createElement('div');
+            box.className = 'node-box';
+
+            // Apply different styling based on node type
+            if (node.left === null && node.right === null) {
+                box.classList.add('animal-node');
+                box.innerText = node.key;
+            } else {
+                box.classList.add('question-node');
+                box.innerText = node.key;
+            }
+
+            // Add optional Yes/No sub-label from parents perspective
+            if (labelText) {
+                const span = document.createElement('span');
+                span.className = 'branch-label';
+                span.innerText = labelText;
+                li.appendChild(span);
+            }
+
+            li.appendChild(box);
+
+            // If children exist, recursively append them inside a sub <ul>
+            if (node.left || node.right) {
+                const subUl = document.createElement('ul');
+                if (node.left) subUl.appendChild(createHtmlBranch(node.left, 'Ja'));
+                if (node.right) subUl.appendChild(createHtmlBranch(node.right, 'Nee'));
+                li.appendChild(subUl);
+            }
+
+            return li;
+        }
+
+        // Game engine initialization
         function initGame() {
             const saved = localStorage.getItem("animalTree");
             if (saved) {
                 root = objectsToTree(JSON.parse(saved));
             } else {
-                root = new Node("mug"); // Default animal
+                root = new Node("mug");
                 saveTree();
             }
+            renderTreeVisual();
             showStartScreen();
         }
 
@@ -163,7 +299,6 @@
             }
         }
 
-        // Game loop navigation steps
         function showStartScreen() {
             actionButtons.classList.add('hidden');
             learnInterface.classList.add('hidden');
@@ -180,31 +315,26 @@
         }
 
         function evaluateCurrentNode() {
-            // Check if leaf node (Animal guess)
             if (currentNode.left === null && currentNode.right === null) {
                 gameText.innerText = `Is het een ${currentNode.key}?`;
                 actionButtons.classList.remove('hidden');
             } else {
-                // Decision node (Question)
                 gameText.innerText = `${currentNode.key}`;
                 actionButtons.classList.remove('hidden');
             }
         }
 
         function handleAnswer(isYes) {
-            // Leaf node handling (Guess outcome)
             if (currentNode.left === null && currentNode.right === null) {
                 if (isYes) {
                     gameText.innerText = "Ik heb gewonnen! 🎉";
                     actionButtons.classList.add('hidden');
                     setTimeout(showStartScreen, 2500);
                 } else {
-                    // Computer lost, enter learning wizard sequence
                     actionButtons.classList.add('hidden');
                     startLearningWizard();
                 }
             } else {
-                // Branch node navigation
                 parentNode = currentNode;
                 if (isYes) {
                     currentDirection = 'left';
@@ -217,7 +347,6 @@
             }
         }
 
-        // Learning phase multi-step setup
         function startLearningWizard() {
             learnState = 1;
             learnInterface.classList.remove('hidden');
@@ -241,7 +370,6 @@
             }
             else if (learnState === 2) {
                 newQuestion = value;
-                // Capitalize first letter and append question mark if missing
                 newQuestion = newQuestion.charAt(0).toUpperCase() + newQuestion.slice(1);
                 if (!newQuestion.endsWith('?')) newQuestion += '?';
 
@@ -252,20 +380,16 @@
             }
         }
 
-        // Capture final Yes/No state for custom configuration step 3
         function handleFinalLearnAnswer(isYes) {
             let animalNode = new Node(newAnimal);
             let questionNode = new Node(newQuestion);
 
-            // Reconstruct modern binary node branch splits
             questionNode.left = isYes ? animalNode : currentNode;
             questionNode.right = isYes ? currentNode : animalNode;
 
             if (!parentNode) {
-                // Tree only had 1 leaf element originally
                 root = questionNode;
             } else {
-                // Link question back into structural chain
                 if (currentDirection === 'left') {
                     parentNode.left = questionNode;
                 } else {
@@ -279,7 +403,6 @@
             setTimeout(showStartScreen, 2500);
         }
 
-        // Overwrite handleAnswer dynamically if user is answering step 3 of wizard
         const originalHandleAnswer = handleAnswer;
         handleAnswer = function(isYes) {
             if (learnState === 3) {
@@ -290,7 +413,6 @@
             }
         };
 
-        // Listen for "Enter" key inside input field form steps
         inputField.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -298,7 +420,6 @@
             }
         });
 
-        // Fire game up when DOM finishes initial load cycle
         window.onload = initGame;
     </script>
 </body>
