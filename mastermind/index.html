@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastermind</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/NavigatieBar.css">
+
+    <style>
+        :root {
+            --mm-primary: #4A90E2;
+            --mm-secondary: #50E3C2;
+            --mm-danger: #FF5A5F;
+            --mm-success: #00b50f;
+            --mm-text: #2C3E50;
+            --mm-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .game-wrapper {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .game-instructions {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px var(--mm-shadow);
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+        }
+
+        .game-instructions h1 {
+            color: var(--mm-primary);
+            margin: 0 0 10px 0;
+        }
+
+        .game-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        #myCanvas {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px var(--mm-shadow);
+        }
+
+        .controls-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px var(--mm-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 300px;
+            box-sizing: border-box;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            justify-items: center;
+        }
+
+        .color-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px var(--mm-shadow);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px var(--mm-shadow);
+        }
+
+        .mm-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--mm-primary);
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .mm-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--mm-shadow);
+        }
+
+        .mm-button.secondary { background: var(--mm-secondary); color: var(--mm-text); }
+        .mm-button.danger { background: var(--mm-danger); }
+
+        #game-status { font-weight: bold; font-size: 1.2rem; color: var(--mm-text); margin: 0; }
+
+        @media (max-width: 768px) {
+            .game-layout { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul class="nav">
+                <li class="nav"><a href="../index.html">Home</a></li>
+                <li class="nav"><a href="../games.html">Games</a></li>
+                <li class="nav"><a href="../nieuws.html">Nieuws</a></li>
+                <li class="nav" style="float:right"><a href="../about.html">Over</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="game-wrapper">
+        <div class="game-instructions">
+            <h1>Mastermind</h1>
+            <p id="game-status">Kraak de geheime 4-kleurige code! (10 pogingen)</p>
+        </div>
+
+        <div class="game-layout">
+            <canvas id="myCanvas" width="400" height="750"></canvas>
+
+            <div class="controls-section">
+                <h3 style="margin:0; text-align:center; color: var(--mm-text);">Kies je kleur:</h3>
+
+                <div class="color-grid">
+                    <button class="color-btn" style="background-color: #E74C3C;" onclick="makeGuess('R')"></button>
+                    <button class="color-btn" style="background-color: #F1C40F;" onclick="makeGuess('Y')"></button>
+                    <button class="color-btn" style="background-color: #3498DB;" onclick="makeGuess('B')"></button>
+                    <button class="color-btn" style="background-color: #E67E22;" onclick="makeGuess('O')"></button>
+                    <button class="color-btn" style="background-color: #ECF0F1;" onclick="makeGuess('W')"></button>
+                    <button class="color-btn" style="background-color: #2ECC71;" onclick="makeGuess('G')"></button>
+                </div>
+
+                <hr style="width: 100%; border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+
+                <button class="mm-button secondary" onclick="undoGuess()">⟲ Wis Laatste Pin</button>
+                <button class="mm-button danger" onclick="resetGame()">↻ Nieuw Spel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const color_mapping = {
+            "R": "#E74C3C",
+            "Y": "#F1C40F",
+            "B": "#3498DB",
+            "O": "#E67E22",
+            "W": "#ECF0F1",
+            "G": "#2ECC71"
+        };
+        const name_mapping = {
+            "R": "rood",
+            "Y": "geel",
+            "B": "blauw",
+            "O": "oranje",
+            "W": "wit",
+            "G": "groen"
+        }
+
+        const AVAILABLE_COLORS = ["R", "Y", "B", "O", "W", "G"];
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+
+        class Game {
+            constructor() {
+                this.correct = [];
+                for(let i = 0; i < 4; i++){
+                    let randomColor = AVAILABLE_COLORS[Math.floor(Math.random() * AVAILABLE_COLORS.length)];
+                    this.correct.push(randomColor);
+                }
+                this.guesses = [];
+                this.corrections = [];
+                this.currentGuess = [];
+                this.gameOver = false;
+            }
+
+            correct_it(gues) {
+                let black = 0;
+                let white = 0;
+
+                let secretMatched = new Array(4).fill(false);
+                let guessMatched = new Array(4).fill(false);
+
+                for (let i = 0; i < 4; i++) {
+                    if (gues[i] === this.correct[i]) {
+                        black++;
+                        secretMatched[i] = true;
+                        guessMatched[i] = true;
+                    }
+                }
+
+                for (let i = 0; i < 4; i++) {
+                    if (guessMatched[i]) continue;
+                    for (let j = 0; j < 4; j++) {
+                        if (!secretMatched[j] && gues[i] === this.correct[j]) {
+                            white++;
+                            secretMatched[j] = true;
+                            break;
+                        }
+                    }
+                }
+
+                let correction_black = new Array(black).fill(2);
+                let correction_white = new Array(white).fill(1);
+
+                let full_correction = [...correction_black, ...correction_white];
+                while(full_correction.length < 4) {
+                    full_correction.push(0);
+                }
+
+                this.guesses.push([...gues]);
+                this.corrections.push([...full_correction]);
+
+                let statusEl = document.getElementById("game-status");
+
+                if (black === 4) {
+                    this.gameOver = true;
+                    statusEl.innerText = "🎉 Gefeliciteerd! Je hebt de code gekraakt!";
+                    statusEl.style.color = "var(--mm-success)";
+                } else if (this.guesses.length >= 10) {
+                    this.gameOver = true;
+                    var names = []
+                    this.correct.forEach(c => names.push(name_mapping[c]));
+                    statusEl.innerText = "❌ Game Over! De code was: " + names.join(", ");
+                    statusEl.style.color = "var(--mm-danger)";
+                }
+
+                return full_correction;
+            }
+        }
+
+        var g = new Game();
+
+        function drawBoard(game) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const rowHeight = 72;
+            const startY = 20;
+
+            for (let i = 0; i < 10; i++) {
+                let yCenter = startY + i * rowHeight + 35;
+
+                if (i === game.guesses.length && !game.gameOver) {
+                    ctx.fillStyle = "rgba(74, 144, 226, 0.1)";
+                    ctx.beginPath();
+                    ctx.roundRect(15, yCenter - 30, 370, 60, 10);
+                    ctx.fill();
+                }
+
+                for (let j = 0; j < 4; j++) {
+                    let x = 60 + j * 65;
+                    ctx.beginPath();
+                    ctx.arc(x, yCenter, 20, 0, 2 * Math.PI);
+
+                    if (i < game.guesses.length) {
+                        ctx.fillStyle = color_mapping[game.guesses[i][j]];
+                    } else if (i === game.guesses.length && j < game.currentGuess.length) {
+                        ctx.fillStyle = color_mapping[game.currentGuess[j]];
+                    } else {
+                        ctx.fillStyle = "#E8EAED";
+                    }
+
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "rgba(0,0,0,0.15)";
+                    ctx.stroke();
+                }
+
+                let fX = [315, 345, 315, 345];
+                let fY = [yCenter - 15, yCenter - 15, yCenter + 15, yCenter + 15];
+
+                for (let j = 0; j < 4; j++) {
+                    ctx.beginPath();
+                    ctx.arc(fX[j], fY[j], 8, 0, 2 * Math.PI);
+
+                    if (i < game.corrections.length) {
+                        let pin = game.corrections[i][j];
+                        if (pin === 2) ctx.fillStyle = "#2C3E50";
+                        else if (pin === 1) ctx.fillStyle = "#FFFFFF";
+                        else ctx.fillStyle = "#E8EAED";
+                    } else {
+                        ctx.fillStyle = "#E8EAED";
+                    }
+
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = "rgba(0,0,0,0.2)";
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function makeGuess(colorCode) {
+            if (g.gameOver) return;
+
+            if (g.currentGuess.length < 4) {
+                g.currentGuess.push(colorCode);
+                drawBoard(g);
+
+                if (g.currentGuess.length === 4) {
+                    setTimeout(() => {
+                        g.correct_it(g.currentGuess);
+                        g.currentGuess = [];
+                        drawBoard(g);
+                    }, 250);
+                }
+            }
+        }
+
+        function undoGuess() {
+            if (g.gameOver || g.currentGuess.length === 0) return;
+            g.currentGuess.pop();
+            drawBoard(g);
+        }
+
+        function resetGame() {
+            g = new Game();
+            let statusEl = document.getElementById("game-status");
+            statusEl.innerText = "Kraak de geheime 4-kleurige code! (10 pogingen)";
+            statusEl.style.color = "var(--mm-text)";
+            drawBoard(g);
+        }
+
+        drawBoard(g);
+    </script>
+</body>
+</html>
