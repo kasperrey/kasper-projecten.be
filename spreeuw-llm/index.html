@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spreeuw - Gradio Chat</title>
-    <link rel="stylesheet" href="spreeuw-llm/chat.css">
+    <link rel="stylesheet" href="chat.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -33,14 +33,14 @@
                     <span class="agent-name">Spreeuw - 0.2B</span>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon"><i data-lucide="share-2"></i></button>
+                    <button class="btn-icon" id="btn-share"><i data-lucide="share-2"></i></button>
                 </div>
             </header>
 
             <div class="messages-viewport">
                 <!-- Messages will be appended here -->
                 <div class="message-wrapper assistant">
-                    <div class="avatar ai-avatar"><video class="ai-video" src="spreeuw-llm/starling.mp4" width="40" height="40" loop muted></video></div>
+                    <div class="avatar ai-avatar"><video class="ai-video" src="starling.mp4" width="40" height="40" loop muted></video></div>
                     <div class="message-content">
                         <div class="message-box">
                             Hallo! Ik ben Spreeuw. Hoe kan ik je vandaag helpen?
@@ -52,9 +52,9 @@
             <footer class="chat-input-container">
                 <form class="input-form">
                     <div class="input-wrapper">
-                        <textarea placeholder="Typ een bericht..." rows="1"></textarea>
+                        <textarea placeholder="Typ een bericht..." rows="1" id="chat-input"></textarea>
+                        <input type="file" id="file-input" style="display: none;" multiple>
                         <div class="input-actions">
-                            <button type="button" class="btn-icon-subtle"><i data-lucide="paperclip"></i></button>
                             <button type="submit" class="btn-send"><i data-lucide="arrow-up"></i></button>
                         </div>
                     </div>
@@ -66,6 +66,6 @@
         </main>
     </div>
 
-    <script type="module" src="spreeuw-llm/chat.js"></script>
+    <script type="module" src="chat.js"></script>
 </body>
 </html>
