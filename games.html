@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Ontdek en speel Letterkuil, Race wagen, Multiplayer Shooter, Eilandmijnwerkers en Dieren Raadspel spellen">
+    <meta name="description" content="Ontdek en speel Letterkuil, Race wagen, Multiplayer Shooter, Eilandmijnwerkers, Dieren Raadspel, Mastermind en Voxelier spellen">
     <title>Games - Kasper's projecten</title>
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/main.css">
@@ -169,7 +169,17 @@
                         <li>Gebruiksvriendelijke interface met een handige 'Undo'-functie om fouten te herstellen.</li>
                         <li>Een modern en strak canvas-ontwerp dat perfect aansluit bij je speelervaring.</li>
                     </ul>
-                    <a href="mastermind/index.html" class="play-button">Speel Mastermind</a>
+                    <a href="mastermind/index.html" class="button">Speel Mastermind</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mySlides fade">
+            <h2>Voxelier</h2>
+            <div class="game-content">
+                <div class="game-description">
+                    <p>Een simpele zelfgemaakte kopie van Minecraft. Het is experimenteel en zeker niet af.</p>
+                    <a href="voxelier/index.html" class="button">Speel Voxelier</a>
                 </div>
             </div>
         </div>
@@ -186,7 +196,8 @@
           <span class="dot" onclick="currentSlide(3)"></span>
           <span class="dot" onclick="currentSlide(4)"></span>
           <span class="dot" onclick="currentSlide(5)"></span>
-            <span class="dot" onclick="currentSlide(6)"></span>
+          <span class="dot" onclick="currentSlide(6)"></span>
+          <span class="dot" onclick="currentSlide(7)"></span>
         </div>
 
         <script>
@@ -194,7 +205,7 @@
             const urlParams = new URLSearchParams(queryString);
             const indexOptional = urlParams.get("slideIndex");
 
-            let slideIndex = indexOptional ? indexOptional : 1;
+            let slideIndex = indexOptional ? parseInt(indexOptional) : 1;
             showSlides(slideIndex);
 
             function plusSlides(n) {
